@@ -1,0 +1,11 @@
+# 개인정보 — 절대 올리지 않는다
+cv.md
+article-digest.md
+config/profile.yml
+config/search.txt
+config/exclude.txt
+data/*
+!data/.gitkeep
+__pycache__/
+*.pyc
+.DS_Store

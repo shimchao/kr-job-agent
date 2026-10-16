@@ -1,0 +1,18 @@
+name: 김서연
+target_roles:
+  - 서비스기획
+  - 사업기획
+experience_years: 5
+career_stage: 경력
+locations: [서울]
+work_style: 하이브리드 가능
+employment_types: [정규직]
+salary:
+  min_annual_krw: 55000000
+  disclose_ok: false
+skip_below: 4.0
+hard_no:
+  - 포괄임금제 + 주 52시간 초과 근무 명시
+  - 근로계약이 아닌 위탁·프리랜서 계약
+nice_to_have:
+  - 재택 가능

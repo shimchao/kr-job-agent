@@ -1,0 +1,21 @@
+# 복사해서 config/profile.yml 로 쓰세요. /job-setup 이 질문하며 채워 줍니다. (Git 에 올라가지 않음)
+name: 홍길동
+target_roles:            # 원하는 직무 (여러 개 가능)
+  - 사업기획
+  - 서비스기획
+experience_years: 5
+career_stage: 경력          # 신입 | 경력
+locations:                  # 근무 가능 지역
+  - 서울
+work_style: 하이브리드 가능    # 상시 재택 | 하이브리드 가능 | 출근 무관
+employment_types: [정규직]    # 정규직 | 계약직 | 프리랜서 …
+salary:
+  min_annual_krw: 0           # 세전 연봉 하한(원). 0 이면 점수에 반영하지 않음
+  disclose_ok: false
+skip_below: 4.0               # 이 점수 미만은 '건너뛰기' 권고
+hard_no:                      # 하나라도 해당하면 점수와 무관하게 '건너뛰기'
+  - 포괄임금제 + 주 52시간 초과 근무 명시
+  - 수습기간 급여 90% 미만
+nice_to_have:
+  - 재택 가능
+  - 성과급 지급 기준 명시
