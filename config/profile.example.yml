@@ -19,3 +19,8 @@ hard_no:                      # 하나라도 해당하면 점수와 무관하게
 nice_to_have:
   - 재택 가능
   - 성과급 지급 기준 명시
+current_employer:             # (선택) 현직이면 회사명. 지원서에 내부 수치를 쓰기 전에 물어봅니다
+title_keywords:               # (선택) /job-batch 가 제목에서 찾을 직무 키워드. 비우면 제목으로 거르지 않음
+  - 사업기획
+exclude_title_keywords:       # (선택) 제목에 있으면 뺄 단어
+  - 인턴

@@ -11,6 +11,12 @@ description: 지원 현황 관리 — 현황표 보기, 상태 변경, 팔로업
 ## 현황 보기
 `python3 scripts/tracker.py list [--status 면접]` · `python3 scripts/tracker.py stats`. 통계 해석은 표본이 작으면(지원 10건 미만) 비율을 결론처럼 말하지 않고 건수로만 말한다.
 
+## 마감 임박
+`python3 scripts/tracker.py deadlines [--days 7]` — 평가는 했는데 아직 지원 안 한 공고 중 마감이 임박한 것(마감이 「채용시」「상시」인 공고는 대상 아님). 시작할 때 먼저 한 번 보여 주고, 마감이 지난 공고는 `set-status <id> 마감` 을 제안한다(변경은 사용자 확인 후).
+
+## 대시보드
+"대시보드 보여줘" 하면 `python3 scripts/dashboard.py` 를 실행해 `data/dashboard.html` 을 만들고 경로를 알려 준다(읽기만 함, 외부 전송 없음). 지원 10건 미만이면 화면에도 건수만 보라고 표시된다.
+
 ## 상태 바꾸기
 사용자가 말한 사실만 반영한다: `python3 scripts/tracker.py set-status <id> <상태> [--note "…"]`. 「지원함」은 사용자가 지원했다고 말했을 때만. 탈락·오퍼가 오면 `--note` 에 사유·조건을 한 줄로 남긴다.
 

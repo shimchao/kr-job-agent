@@ -13,12 +13,14 @@
 
 8. **조사 결과는 출처·날짜와 함께.** 후기·보도는 표본 수와 시기를 적고 일반화하지 않는다. 못 찾은 것은 「확인 불가」.
 9. **법률 판단을 하지 않는다.** 계약·근로조건은 「확인할 질문」으로 정리하고 위법·유효 여부는 노무사·고용노동부(1350)에게 넘긴다.
-10. **결과 보고 끝에 「확인 안 된 것」을 최대 3개** 적는다(없으면 「없음」).
+10. **현직자 이직이면 현재 회사 보호**: `current_employer` 가 있으면 현재 회사의 내부 수치·비공개 정보를 지원 서류·면접 답에 쓰기 전에 사용자에게 공개 가능 여부를 묻는다(`docs/korea-signals.md` §9). 확인 못 한 수치는 빼고 쓴다. 사내 도구·회사 계정에는 이직 자료를 남기지 않도록 시작할 때 한 번 알린다.
+11. **스캔·목록 출력을 잘라서 건수·결론을 말하지 않는다.** `head` 로 일부만 봤으면 전체를 읽거나 `wc -l` 로 센 뒤에 말한다. 목록에 없는 값(연봉·연차)은 「미표기」로 두고 기준 미달로 처리하지 않는다.
+12. **결과 보고 끝에 「확인 안 된 것」을 최대 3개** 적는다(없으면 「없음」).
 
 ## 파일 위치
 - `cv.md` 내 이력서(마크다운) · `config/profile.yml` 희망 조건 · `config/search.txt` 검색어 · `config/exclude.txt` 제외 단어
-- `data/postings.tsv` 스캔으로 모은 공고 · `data/tracker.tsv` 지원 현황(`scripts/tracker.py` 로만 수정) · `data/reports/` 평가 보고서 · `data/applications/` 지원서 · `data/interview-prep/` 면접 준비 · `data/research/` 회사 조사 · `data/offers/` 오퍼 정리 · `data/blacklist.md` 지원 안 할 회사
+- `data/postings.tsv` 스캔으로 모은 공고 · `data/tracker.tsv` 지원 현황(`scripts/tracker.py` 로만 수정) · `data/batch-state.tsv` 일괄 평가 대기열(`scripts/batch.py` 로만) · `data/inbox/` 붙여 넣은 공고 상세 본문 · `data/postings-sal*.tsv` 연봉 필터 스캔 결과 · `data/reports/` 평가 보고서 · `data/applications/` 지원서 · `data/interview-prep/` 면접 준비 · `data/research/` 회사 조사 · `data/offers/` 오퍼 정리 · `data/blacklist.md` 지원 안 할 회사
 - `docs/korea-signals.md` 한국 채용 점검표 · `docs/writing.md` 글쓰기 규칙
 
 ## 스킬
-`/job-setup` 처음 한 번 · `/job-scan` 새 공고 모으기 · `/job-eval` 공고 평가(A~H) · `/job-apply` 자소서·경력기술서 · `/job-resume` 맞춤 이력서 · `/job-research` 회사 조사·연락 초안 · `/job-interview` 면접 준비·연습·복기 · `/job-offer` 오퍼·계약서 읽기 · `/job-track` 현황·팔로업·패턴
+`/job-setup` 처음 한 번 · `/job-scan` 새 공고 모으기 · `/job-batch` 모은 공고 여러 건 일괄 평가 · `/job-eval` 공고 평가(A~H) · `/job-apply` 자소서·경력기술서 · `/job-resume` 맞춤 이력서 · `/job-research` 회사 조사·연락 초안 · `/job-interview` 면접 준비·연습·복기 · `/job-offer` 오퍼·계약서 읽기 · `/job-track` 현황·팔로업·패턴

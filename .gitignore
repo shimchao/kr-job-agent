@@ -9,3 +9,5 @@ data/*
 __pycache__/
 *.pyc
 .DS_Store
+# 평가용 가상 이력서(김서연)는 올린다 — 위의 cv.md 규칙의 예외
+!tests/evals/fixtures/cv.md

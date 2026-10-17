@@ -39,11 +39,20 @@ def _clean(s):
 
 
 # ── 사람인 ─────────────────────────────────────────────
+# 사람인 검색 화면의 연봉 필터 코드 (2026-10-17 화면 sal_min_sel 에서 읽은 값). 만원 단위 → 코드
+SARAMIN_SAL = {2400: 8, 2600: 9, 2800: 10, 3000: 11, 3200: 12, 3400: 13, 3600: 14, 3800: 15,
+               4000: 16, 5000: 17, 6000: 18, 7000: 19, 8000: 20, 9000: 21, 10000: 22}
+SAL_MIN = None  # --sal-min 으로 정해진다 (사람인만)
+
+
 def saramin_url(keyword, page):
-    q = urllib.parse.urlencode({
+    params = {
         "searchType": "search", "searchword": keyword,
         "recruitPage": page, "recruitSort": "relation", "recruitPageCount": 20,
-    })
+    }
+    if SAL_MIN:
+        params["sal_min"] = SARAMIN_SAL[SAL_MIN]
+    q = urllib.parse.urlencode(params)
     return "https://www.saramin.co.kr/zf_user/search/recruit?" + q
 
 
@@ -75,6 +84,34 @@ def jobkorea_url(keyword, page):
     return "https://www.jobkorea.co.kr/Search/?" + q
 
 
+REGION = re.compile(r"^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주|전국|해외)")
+
+
+def _jobkorea_condition(seg, title_html):
+    """검색 카드 한 장에서 지역과 경력 구분(신입/경력)만 읽는다. 연차 숫자·연봉은 카드에 없다(본문에서만).
+    카드 글자는 「제목 | 회사 | 지역 | 직무들 | … | 경력 또는 신입」 순서로 나온다."""
+    i = seg.find(title_html)
+    if i < 0:
+        return ""
+    flat = re.sub(r"<[^>]+>", "|", seg[i:])
+    chunk = flat.split("|스크랩|")[0] if "|스크랩|" in flat else flat
+    toks = [_clean(t) for t in chunk.split("|") if _clean(t)]
+    region = next((t for t in toks[2:5] if REGION.match(t)), "")
+    tail = toks[3:]
+    if "경력" in tail and "신입 지원 가능" in tail:
+        career = "신입·경력"
+    elif "경력" in tail:
+        career = "경력"
+    elif "신입" in tail:
+        career = "신입"
+    else:
+        career = ""
+    ym = re.search(r"(\d+)\s*년\s*(이상|↑)", _clean(title_html))  # 제목에 「(5년 이상)」 처럼 적힌 연차
+    if ym:
+        career = f"경력{ym[1]}년↑"
+    return " ".join(x for x in (region, career) if x)
+
+
 def parse_jobkorea(text):
     """잡코리아 검색 결과는 화면 전용 클래스명이 자주 바뀐다.
     공고 번호(GI_Read/숫자)를 기준으로 묶고, 제목은 굵은 글씨 링크에서 읽는다."""
@@ -94,7 +131,7 @@ def parse_jobkorea(text):
             "title": _clean(title.group(1)),
             "company": _clean(comp[0]) if comp else "",
             "deadline": "",
-            "condition": "",
+            "condition": _jobkorea_condition(seg, title.group(0)),
             "url": f"https://www.jobkorea.co.kr/Recruit/GI_Read/{rid}",
         })
     return out
@@ -126,9 +163,24 @@ def main():
     ap.add_argument("--sites", default="saramin,jobkorea")
     ap.add_argument("--pages", type=int, default=1, help="검색어당 페이지 수 (기본 1, 최대 5)")
     ap.add_argument("--delay", type=float, default=3.0, help="요청 간격(초). 3 미만은 3으로 올림")
+    ap.add_argument("--sal-min", type=int, help="사람인 연봉 필터(만원): 2400·2600·…·5000·6000·7000·8000·9000·10000. 잡코리아는 필터가 없어 적용 안 됨")
+    ap.add_argument("--profile", action="store_true", help="config/profile.yml 의 연봉 하한을 사람인 연봉 필터로 쓴다(--sal-min 이 없을 때)")
     ap.add_argument("--dry", action="store_true", help="파일에 저장하지 않고 보기만")
     a = ap.parse_args()
 
+    global SAL_MIN
+    if a.profile and not a.sal_min:
+        import filters
+        want = filters.load_profile().get("min_sal_man")
+        if want:
+            ok = [k for k in SARAMIN_SAL if k <= want]
+            if ok:
+                a.sal_min = max(ok)  # 하한 이하 중 가장 가까운 사람인 단계(필터는 더 넓게, 이후 목록 연봉으로 다시 거른다)
+                print(f"[프로필] 연봉 하한 {want}만원 → 사람인 필터 {a.sal_min}만원 이상")
+    if a.sal_min:
+        if a.sal_min not in SARAMIN_SAL:
+            sys.exit(f"--sal-min 은 {sorted(SARAMIN_SAL)} 중 하나")
+        SAL_MIN = a.sal_min
     kws = [k.strip() for k in a.keywords.split(",")] if a.keywords else read_lines(ROOT / "config" / "search.txt")
     if not kws:
         sys.exit("검색어가 없습니다. config/search.txt 에 한 줄에 하나씩 쓰거나 --keywords 로 주세요.")
@@ -140,7 +192,7 @@ def main():
             sys.exit(f"지원하지 않는 사이트: {s} (지원: {', '.join(SITES)})")
 
     guard, seen, today = RobotsGuard(), load_seen(), date.today().isoformat()
-    new, skipped, stopped = [], [], set()
+    new, skipped, stopped, hits = [], [], set(), []
 
     for site in sites:
         build, parse = SITES[site]
@@ -168,6 +220,9 @@ def main():
                     break
                 for r in rows:
                     key = (site, r["id"])
+                    if SAL_MIN and site == "saramin" and not any(e in r["title"].lower() for e in excl):
+                        if all(h["id"] != r["id"] for h in hits):
+                            hits.append({"first_seen": today, "site": site, **r})
                     if key in seen:
                         continue
                     seen.add(key)
@@ -184,6 +239,20 @@ def main():
                 w.writeheader()
             w.writerows(new)
 
+    if SAL_MIN and hits:
+        out = ROOT / "data" / f"postings-sal{SAL_MIN}.tsv"
+        if not a.dry:
+            out.parent.mkdir(exist_ok=True)
+            with out.open("w", encoding="utf-8", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=COLS, delimiter="\t", extrasaction="ignore")
+                w.writeheader()
+                w.writerows(hits)
+        print(f"## 사람인 연봉 {SAL_MIN}만원 이상 필터 결과 {len(hits)}건 (이미 본 공고 포함)" + (f" → {out.name}" if not a.dry else " (저장 안 함: --dry)"))
+        print("※ 사람인 필터는 엄격하지 않아 연봉 미표기·7천 미만이 섞입니다. 조건 칸에 적힌 연봉으로 다시 확인하세요.")
+        print("| 회사 | 제목 | 마감 | 조건 | 링크 |\n|---|---|---|---|---|")
+        for r in hits:
+            print(f"| {r['company']} | {r['title']} | {r['deadline']} | {r['condition']} | {r['url']} |")
+        print()
     print(f"## 새 공고 {len(new)}건" + (" (저장 안 함: --dry)" if a.dry else ""))
     if new:
         print("| 사이트 | 회사 | 제목 | 마감 | 조건 | 링크 |\n|---|---|---|---|---|---|")
