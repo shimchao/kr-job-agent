@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 from robots_guard import RobotsRules  # noqa: E402
 from scan import parse_jobkorea, parse_saramin  # noqa: E402
-import liveness, tracker, keyword_match, render_pdf, calc, extract_text  # noqa: E402
+import liveness, tracker, keyword_match, render_pdf, calc, extract_text, fetch_posting  # noqa: E402
 import tempfile, zipfile, io, contextlib
 
 ROBOTS = """
@@ -395,6 +395,19 @@ class Dashboard(unittest.TestCase):
     def test_empty_table_renders(self):
         tracker.save([])
         self.assertIn("현황표가 비어 있습니다", self.dashboard.build([], []))
+
+
+class DetailUrl(unittest.TestCase):
+    def test_saramin_detail_from_rec_idx(self):
+        self.assertEqual(fetch_posting.detail_url("https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=123&x=1"),
+                         "https://www.saramin.co.kr/zf_user/jobs/relay/view-detail?rec_idx=123")
+
+    def test_jobkorea_detail_from_gno(self):
+        self.assertEqual(fetch_posting.detail_url("https://www.jobkorea.co.kr/Recruit/GI_Read/456?x=1"),
+                         "https://www.jobkorea.co.kr/Recruit/GI_Read_Comt_Ifrm?Gno=456")
+
+    def test_other_site_has_no_detail_url(self):
+        self.assertIsNone(fetch_posting.detail_url("https://example.com/job/1"))
 
 
 if __name__ == "__main__":
